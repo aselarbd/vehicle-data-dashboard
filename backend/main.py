@@ -1,5 +1,9 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 from configs import API_BASE
 from database import create_db_and_tables

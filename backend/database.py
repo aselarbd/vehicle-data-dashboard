@@ -1,6 +1,7 @@
 from typing import Annotated
 from fastapi import Depends
 from sqlmodel import Field, Session, SQLModel, create_engine, select
+from configs import DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME
 
 
 class BaseDataModel(SQLModel):
@@ -44,10 +45,9 @@ class BaseDataModel(SQLModel):
             results = session.exec(statement).all()
             return list(results)
 
-database_url = f'sqlite:///vehicle.db'
+database_url = f'mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?charset=utf8mb4'
 
-connect_args = {"check_same_thread": False}
-engine = create_engine(database_url, connect_args=connect_args)
+engine = create_engine(database_url, echo=True)
 
 def create_db_and_tables():
     SQLModel.metadata.create_all(engine)

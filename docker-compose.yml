@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  volteras-db:
+    image: mysql:8.0
+    container_name: volteras-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: vehicle
+      MYSQL_USER: fastapi_user
+      MYSQL_PASSWORD: fastapi_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init-db:/docker-entrypoint-initdb.d
+    networks:
+      - volteras-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+      start_period: 40s
+      interval: 30s
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  volteras-network:
+    driver: bridge
