@@ -1,6 +1,6 @@
 import glob
 import os
-from typing import List
+from typing import List, Optional
 
 import pandas as pd
 from sqlmodel import Session, select
@@ -77,3 +77,8 @@ def get_all_vehicle_ids(session: SessionDep) -> List[VehicleList]:
     results = session.exec(statement).all()
 
     return list(results)
+
+def get_a_vehicle(id: int, session: SessionDep) -> Optional[VehicleData]:
+    """"Get a vehicle data by ID from VehicleData table"""
+    
+    return session.get(VehicleData, id)

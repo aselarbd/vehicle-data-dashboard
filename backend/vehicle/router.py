@@ -1,8 +1,9 @@
 from typing import Any, List
-from fastapi import APIRouter, status
+from fastapi import APIRouter, HTTPException, status
 
 from database import SessionDep
-from vehicle.service import get_all_vehicle_ids, load_data_from_folder
+from vehicle.schema import VehicleDataSchema
+from vehicle.service import get_a_vehicle, get_all_vehicle_ids, load_data_from_folder
 
 
 # Create router with prefix for all vehicle_data routes
@@ -15,10 +16,21 @@ def populate_data() -> Any:
     load_data_from_folder()
 
 
-@router.get('/{id}/', status_code=status.HTTP_200_OK)
-async def get_a_vehicle_data(id: int) -> Any:
+@router.get(
+        '/{id}/',
+        response_model=VehicleDataSchema, 
+        status_code=status.HTTP_200_OK,
+        responses={
+               200: {"description": "Vehicle data retrieved successfully"},
+               404: {"description": "Vehicle record not found"}
+           },
+        )
+async def get_a_vehicle_data(id: int, session: SessionDep) -> Any:
     """Get a vehicle data by ID"""
-    pass
+    data = get_a_vehicle(id, session)
+    if not data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Vehicle record not found")
+    return data
 
 
 @router.get('/', status_code=status.HTTP_200_OK,)
