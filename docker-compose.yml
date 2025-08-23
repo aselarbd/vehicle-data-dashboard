@@ -24,6 +24,26 @@ services:
       start_period: 40s
       interval: 30s
 
+  volteras_backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: volteras_backend
+    restart: unless-stopped
+    environment:
+      - DB_HOST=volteras-db
+      - DB_PORT=3306
+      - DB_USER=fastapi_user
+      - DB_PASSWORD=fastapi_password
+      - DB_NAME=vehicle
+    ports:
+      - "8000:8000"
+    depends_on:
+      volteras-db:
+        condition: service_healthy
+    networks:
+      - volteras-network
+
 volumes:
   mysql_data:
     driver: local
