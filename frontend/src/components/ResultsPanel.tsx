@@ -1,9 +1,13 @@
 import type { FC } from 'react';
-import type { VehicleData } from '../services/api';
+import { useState, useMemo } from 'react';
+import type { VehicleDataPoint } from '../hooks/useVehicleData';
 import LoadingSpinner from './LoadingSpinner';
 
+type SortDirection = 'asc' | 'desc' | null;
+type SortableColumn = 'id' | 'timestamp' | 'speed' | 'odometer' | 'soc' | 'elevation' | 'shift_state';
+
 interface ResultsPanelProps {
-  data: VehicleData[];
+  data: VehicleDataPoint[];
   loading: boolean;
   error: string | null;
   totalCount: number;
@@ -19,6 +23,79 @@ const ResultsPanel: FC<ResultsPanelProps> = ({
   currentPage,
   onPageChange,
 }) => {
+  const [sortColumn, setSortColumn] = useState<SortableColumn | null>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>(null);
+
+  // Sort the data based on current sort settings
+  const sortedData = useMemo(() => {
+    if (!sortColumn || !sortDirection) {
+      return data;
+    }
+
+    return [...data].sort((a, b) => {
+      let aVal = a[sortColumn];
+      let bVal = b[sortColumn];
+
+      // Handle null values
+      if (aVal === null && bVal === null) return 0;
+      if (aVal === null) return sortDirection === 'asc' ? 1 : -1;
+      if (bVal === null) return sortDirection === 'asc' ? -1 : 1;
+
+      // Handle different data types
+      if (sortColumn === 'timestamp') {
+        aVal = new Date(aVal as string).getTime();
+        bVal = new Date(bVal as string).getTime();
+      } else if (typeof aVal === 'string' && typeof bVal === 'string') {
+        aVal = aVal.toLowerCase();
+        bVal = bVal.toLowerCase();
+      }
+
+      if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [data, sortColumn, sortDirection]);
+
+  const handleSort = (column: SortableColumn) => {
+    if (sortColumn === column) {
+      // Cycle through: asc -> desc -> null
+      if (sortDirection === 'asc') {
+        setSortDirection('desc');
+      } else if (sortDirection === 'desc') {
+        setSortDirection(null);
+        setSortColumn(null);
+      } else {
+        setSortDirection('asc');
+      }
+    } else {
+      setSortColumn(column);
+      setSortDirection('asc');
+    }
+  };
+
+  const getSortIcon = (column: SortableColumn) => {
+    if (sortColumn !== column) {
+      return (
+        <span className="sort-icons">
+          <span className="sort-icon">▲</span>
+          <span className="sort-icon">▼</span>
+        </span>
+      );
+    }
+
+    if (sortDirection === 'asc') {
+      return <span className="sort-icons active"><span className="sort-icon active">▲</span></span>;
+    } else if (sortDirection === 'desc') {
+      return <span className="sort-icons active"><span className="sort-icon active">▼</span></span>;
+    }
+
+    return (
+      <span className="sort-icons">
+        <span className="sort-icon">▲</span>
+        <span className="sort-icon">▼</span>
+      </span>
+    );
+  };
   const formatValue = (value: any): string => {
     if (value === null || value === undefined) {
       return 'N/A';
@@ -132,17 +209,73 @@ const ResultsPanel: FC<ResultsPanelProps> = ({
         <table className="data-table">
           <thead>
             <tr>
-              <th>ID</th>
-              <th>Timestamp</th>
-              <th>Speed (mph)</th>
-              <th>Odometer</th>
-              <th>SOC (%)</th>
-              <th>Elevation (ft)</th>
-              <th>Shift State</th>
+              <th 
+                className="sortable-header" 
+                onClick={() => handleSort('id')}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === 'Enter' && handleSort('id')}
+              >
+                ID {getSortIcon('id')}
+              </th>
+              <th 
+                className="sortable-header" 
+                onClick={() => handleSort('timestamp')}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === 'Enter' && handleSort('timestamp')}
+              >
+                Timestamp {getSortIcon('timestamp')}
+              </th>
+              <th 
+                className="sortable-header" 
+                onClick={() => handleSort('speed')}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === 'Enter' && handleSort('speed')}
+              >
+                Speed (mph) {getSortIcon('speed')}
+              </th>
+              <th 
+                className="sortable-header" 
+                onClick={() => handleSort('odometer')}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === 'Enter' && handleSort('odometer')}
+              >
+                Odometer {getSortIcon('odometer')}
+              </th>
+              <th 
+                className="sortable-header" 
+                onClick={() => handleSort('soc')}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === 'Enter' && handleSort('soc')}
+              >
+                SOC (%) {getSortIcon('soc')}
+              </th>
+              <th 
+                className="sortable-header" 
+                onClick={() => handleSort('elevation')}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === 'Enter' && handleSort('elevation')}
+              >
+                Elevation (ft) {getSortIcon('elevation')}
+              </th>
+              <th 
+                className="sortable-header" 
+                onClick={() => handleSort('shift_state')}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === 'Enter' && handleSort('shift_state')}
+              >
+                Shift State {getSortIcon('shift_state')}
+              </th>
             </tr>
           </thead>
           <tbody>
-            {data.map((row) => (
+            {sortedData.map((row) => (
               <tr key={row.id}>
                 <td>{formatValue(row.id)}</td>
                 <td>{formatValue(row.timestamp)}</td>

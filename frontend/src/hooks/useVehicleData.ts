@@ -20,7 +20,7 @@ interface UseVehicleDataReturn {
   clearResults: () => void;
 }
 
-const ITEMS_PER_PAGE = 20;
+const ITEMS_PER_PAGE = 10;
 
 export const useVehicleData = (): UseVehicleDataReturn => {
   const [vehicleData, setVehicleData] = useState<VehicleDataPoint[]>([]);
