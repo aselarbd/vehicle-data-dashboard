@@ -1,13 +1,15 @@
 import glob
 import os
-from typing import List, Optional
+from typing import Annotated, List, Optional
 
+from fastapi import Query
 import pandas as pd
-from sqlmodel import Session, select
+from sqlmodel import Session, func, select
 
 from configs import DATA_PATH
 from database import SessionDep, engine
 from vehicle.model import VehicleData, VehicleList
+from vehicle.schema import FilterVehicles
 
 
 
@@ -82,3 +84,31 @@ def get_a_vehicle(id: int, session: SessionDep) -> Optional[VehicleData]:
     """"Get a vehicle data by ID from VehicleData table"""
     
     return session.get(VehicleData, id)
+
+def get_vehicle_list(filter_vehicles: Annotated[FilterVehicles, Query()], vehicle_record_id: int, session: SessionDep) -> Optional[List[VehicleData]]:
+    """Get filtered list of vehicles"""
+    
+    # Build the main query for VehicleData
+    statement = select(VehicleData).where(VehicleData.vehicle_list_id == vehicle_record_id)
+    count_statement = select(func.count(VehicleData.id)).where(VehicleData.vehicle_list_id == vehicle_record_id)
+
+    # Apply timestamp filters if provided
+    if filter_vehicles.initial:
+        statement = statement.where(VehicleData.timestamp >= filter_vehicles.initial)
+        count_statement = count_statement.where(VehicleData.timestamp >= filter_vehicles.initial)
+    
+    if filter_vehicles.final:
+        statement = statement.where(VehicleData.timestamp <= filter_vehicles.final)
+        count_statement = count_statement.where(VehicleData.timestamp <= filter_vehicles.final)
+    
+    # Apply ordering by timestamp for consistent pagination
+    statement = statement.order_by(VehicleData.timestamp)
+    
+    # Apply offset and limit
+    statement = statement.offset(filter_vehicles.page * filter_vehicles.limit).limit(filter_vehicles.limit)
+    
+    # Execute the query only once
+    count = session.exec(count_statement).one()
+    results = session.exec(statement).all()
+    
+    return { 'count': count,'data': list(results)}

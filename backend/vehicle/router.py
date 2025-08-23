@@ -1,9 +1,11 @@
-from typing import Any, List
-from fastapi import APIRouter, HTTPException, status
+from typing import Annotated, Any, List
+from fastapi import APIRouter, HTTPException, Query, status
+from sqlmodel import select
 
 from database import SessionDep
-from vehicle.schema import VehicleDataSchema
-from vehicle.service import get_a_vehicle, get_all_vehicle_ids, load_data_from_folder
+from vehicle.model import VehicleList
+from vehicle.schema import FilterVehicles, VehicleDataSchema, VehicleListOutputSchema
+from vehicle.service import get_a_vehicle, get_all_vehicle_ids, get_vehicle_list, load_data_from_folder
 
 
 # Create router with prefix for all vehicle_data routes
@@ -33,10 +35,24 @@ async def get_a_vehicle_data(id: int, session: SessionDep) -> Any:
     return data
 
 
-@router.get('/', status_code=status.HTTP_200_OK,)
-async def get_vehicle_data_list() -> Any:
+@router.get(
+        '/',
+        response_model=VehicleListOutputSchema, 
+        status_code=status.HTTP_200_OK,
+        )
+async def get_vehicle_data_list(filter_vehicles: Annotated[FilterVehicles, Query()], session: SessionDep) -> Any:
     """Get vehicle data list"""
-    pass
+    
+    statement = select(VehicleList).where(VehicleList.vehicle_id == filter_vehicles.vehicle_id)
+    results = session.exec(statement).first()
+
+    if not results:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Selected Vehicle ID not found")
+    
+    vehicle_record_id = results.id
+    data = get_vehicle_list(filter_vehicles, vehicle_record_id, session)
+
+    return data
     
 
 
