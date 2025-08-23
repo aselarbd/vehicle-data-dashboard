@@ -1,6 +1,8 @@
 from typing import Any, List
 from fastapi import APIRouter, status
 
+from vehicle.service import load_data_from_folder
+
 
 # Create router with prefix for all vehicle_data routes
 router = APIRouter(prefix="/vehicle_data", tags=["vehicle_data"])
@@ -9,7 +11,7 @@ router = APIRouter(prefix="/vehicle_data", tags=["vehicle_data"])
 @router.post('/populate', status_code=status.HTTP_201_CREATED)
 def populate_data() -> Any:
     """Populate data to databse from files"""
-    pass
+    load_data_from_folder()
 
 
 @router.get('/{id}/', status_code=status.HTTP_200_OK)
