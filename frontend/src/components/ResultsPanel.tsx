@@ -1,55 +1,24 @@
 import type { FC } from 'react';
+import type { VehicleData } from '../services/api';
+import LoadingSpinner from './LoadingSpinner';
 
-// Mock data for UI development
-const mockData = [
-  {
-    id: 1,
-    timestamp: '2024-01-15T10:30:00Z',
-    speed: 65,
-    odometer: 12500,
-    soc: 85,
-    elevation: 120,
-    shift_state: 'D'
-  },
-  {
-    id: 2,
-    timestamp: '2024-01-15T10:31:00Z',
-    speed: 68,
-    odometer: 12501,
-    soc: 84,
-    elevation: 125,
-    shift_state: 'D'
-  },
-  {
-    id: 3,
-    timestamp: '2024-01-15T10:32:00Z',
-    speed: 72,
-    odometer: 12502,
-    soc: 84,
-    elevation: 128,
-    shift_state: 'D'
-  },
-  {
-    id: 4,
-    timestamp: '2024-01-15T10:33:00Z',
-    speed: null,
-    odometer: 12503,
-    soc: 83,
-    elevation: 130,
-    shift_state: 'P'
-  },
-  {
-    id: 5,
-    timestamp: '2024-01-15T10:34:00Z',
-    speed: 0,
-    odometer: 12503,
-    soc: 83,
-    elevation: 130,
-    shift_state: 'P'
-  }
-];
+interface ResultsPanelProps {
+  data: VehicleData[];
+  loading: boolean;
+  error: string | null;
+  totalCount: number;
+  currentPage: number;
+  onPageChange: (page: number) => void;
+}
 
-const ResultsPanel: FC = () => {
+const ResultsPanel: FC<ResultsPanelProps> = ({
+  data,
+  loading,
+  error,
+  totalCount,
+  currentPage,
+  onPageChange,
+}) => {
   const formatValue = (value: any): string => {
     if (value === null || value === undefined) {
       return 'N/A';
@@ -63,12 +32,99 @@ const ResultsPanel: FC = () => {
     return String(value);
   };
 
+  const itemsPerPage = 10;
+  const totalPages = Math.ceil(totalCount / itemsPerPage);
+
+  const renderPagination = () => {
+    if (totalPages <= 1) return null;
+
+    const pages = [];
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    // Previous button
+    pages.push(
+      <button
+        key="prev"
+        className="pagination-btn"
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage <= 1}
+      >
+        ‹ Previous
+      </button>
+    );
+
+    // Page numbers
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(
+        <button
+          key={i}
+          className={`pagination-btn ${i === currentPage ? 'active' : ''}`}
+          onClick={() => onPageChange(i)}
+        >
+          {i}
+        </button>
+      );
+    }
+
+    // Next button
+    pages.push(
+      <button
+        key="next"
+        className="pagination-btn"
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage >= totalPages}
+      >
+        Next ›
+      </button>
+    );
+
+    return <div className="pagination">{pages}</div>;
+  };
+
+  if (loading) {
+    return (
+      <div className="results-section">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="results-section">
+        <div className="error-state">
+          <h3>⚠️ Error Loading Data</h3>
+          <p>{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (data.length === 0) {
+    return (
+      <div className="results-section">
+        <div className="empty-state">
+          <h3>📊 No Data Found</h3>
+          <p>Try adjusting your search criteria or select a different vehicle.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="results-section">
       <div className="results-header">
-        <h2>Vehicle Data Results</h2>
+        <h2>📈 Vehicle Data Results</h2>
         <div className="results-summary">
-          <span className="results-count">Showing 5 of 1,247 records</span>
+          <span className="results-count">
+            Showing page {currentPage} of {totalPages} ({totalCount.toLocaleString()} total records)
+          </span>
         </div>
       </div>
 
@@ -86,7 +142,7 @@ const ResultsPanel: FC = () => {
             </tr>
           </thead>
           <tbody>
-            {mockData.map((row) => (
+            {data.map((row) => (
               <tr key={row.id}>
                 <td>{formatValue(row.id)}</td>
                 <td>{formatValue(row.timestamp)}</td>
@@ -101,15 +157,7 @@ const ResultsPanel: FC = () => {
         </table>
       </div>
 
-      <div className="pagination">
-        <button className="pagination-btn" disabled>‹ Previous</button>
-        <button className="pagination-btn active">1</button>
-        <button className="pagination-btn">2</button>
-        <button className="pagination-btn">3</button>
-        <span>...</span>
-        <button className="pagination-btn">125</button>
-        <button className="pagination-btn">Next ›</button>
-      </div>
+      {renderPagination()}
     </div>
   );
 };
