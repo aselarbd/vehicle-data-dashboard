@@ -44,7 +44,7 @@ class BaseDataModel(SQLModel):
             results = session.exec(statement).all()
             return list(results)
 
-database_url = f'sqlite:///vehicle_db.db'
+database_url = f'sqlite:///vehicle.db'
 
 connect_args = {"check_same_thread": False}
 engine = create_engine(database_url, connect_args=connect_args)

@@ -2,8 +2,10 @@ import glob
 import os
 
 import pandas as pd
+from sqlmodel import Session, select
 
 from configs import DATA_PATH
+from database import engine
 from vehicle.model import VehicleData, VehicleList
 
 
@@ -11,6 +13,13 @@ from vehicle.model import VehicleData, VehicleList
 
 def load_data_from_folder() -> None:
     """Load data from the folder"""
+
+    # Get existing vehicle IDs from database at the beginning
+    with Session(engine) as session:
+        existing_vehicle_ids = set()
+        statement = select(VehicleList.vehicle_id)
+        results = session.exec(statement).all()
+        existing_vehicle_ids = set(results)
 
     # Load files
     csv_files = glob.glob(os.path.join(DATA_PATH, "*.csv"))
@@ -20,6 +29,10 @@ def load_data_from_folder() -> None:
     for csv_file in csv_files:
         file_id = os.path.splitext(os.path.basename(csv_file))[0]
 
+        # Skip if this file_id already exists in database
+        if file_id in existing_vehicle_ids:
+            continue
+        
         data.append({
             'vehicle_id': VehicleList(vehicle_id=file_id),
             'vehicle_data': pd.read_csv(csv_file)
