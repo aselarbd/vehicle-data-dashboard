@@ -66,14 +66,14 @@ const SearchFilters: FC<SearchFiltersProps> = ({
             disabled={!selectedVehicleId || loading}
             className="search-btn"
           >
-            {loading ? '⏳ Searching...' : '🔎 Search Data'}
+            {loading ? '⏳ Filtering...' : '🔎 Filter'}
           </button>
           
           <button 
             onClick={onClear}
             className="clear-btn"
           >
-            🗑️ Clear Filters
+            🗑️ Clear
           </button>
         </div>
       </div>
