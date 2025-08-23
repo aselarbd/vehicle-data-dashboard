@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { vehicleApiService } from '../services/api/vehicle.service';
+import { ERROR_MESSAGES } from '../constants';
 
 interface UseVehicleIdsReturn {
   vehicleIds: string[];
@@ -17,16 +19,10 @@ export const useVehicleIds = (): UseVehicleIdsReturn => {
         setLoading(true);
         setError(null);
         
-        const response = await fetch('http://localhost:8000/api/v1/vehicle_data/vehicle_ids');
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const ids = await response.json();
+        const ids = await vehicleApiService.getVehicleIds();
         setVehicleIds(ids);
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to load vehicle IDs';
+        const errorMessage = err instanceof Error ? err.message : ERROR_MESSAGES.FAILED_TO_LOAD_VEHICLES;
         setError(errorMessage);
         console.error('Error loading vehicle IDs:', err);
       } finally {

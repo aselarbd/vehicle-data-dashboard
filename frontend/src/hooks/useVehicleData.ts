@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import type { VehicleDataPoint } from '../types';
-import { PAGINATION } from '../constants';
+import { vehicleApiService } from '../services/api/vehicle.service';
+import { PAGINATION, ERROR_MESSAGES } from '../constants';
 
 // Re-export for backward compatibility
 export type { VehicleDataPoint } from '../types';
@@ -29,7 +30,7 @@ export const useVehicleData = (): UseVehicleDataReturn => {
     page: number
   ) => {
     if (!vehicleId) {
-      setError('Please select a vehicle');
+      setError(ERROR_MESSAGES.NO_VEHICLE_SELECTED);
       return;
     }
 
@@ -37,33 +38,22 @@ export const useVehicleData = (): UseVehicleDataReturn => {
     setError(null);
 
     try {
-      const page_zero_based = page - 1; // Backend expects 0-based pagination
-      const params = new URLSearchParams({
+      const filters = {
         vehicle_id: vehicleId,
-        page: page_zero_based.toString(),
-        limit: PAGINATION.ITEMS_PER_PAGE.toString(),
-      });
+        page,
+        limit: PAGINATION.ITEMS_PER_PAGE,
+        ...(startDateTime && { initial: startDateTime }),
+        ...(endDateTime && { final: endDateTime }),
+      };
 
-      if (startDateTime) {
-        params.append('initial', startDateTime);
-      }
-      if (endDateTime) {
-        params.append('final', endDateTime);
-      }
-
-      const response = await fetch(`http://localhost:8000/api/v1/vehicle_data/?${params}`);
+      const response = await vehicleApiService.getVehicleData(filters);
       
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      
-      setVehicleData(data.data || []);
-      setTotalCount(data.count || 0);
+      setVehicleData(response.data || []);
+      setTotalCount(response.count || 0);
       setCurrentPage(page);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch vehicle data');
+      const errorMessage = err instanceof Error ? err.message : ERROR_MESSAGES.FAILED_TO_LOAD_DATA;
+      setError(errorMessage);
       setVehicleData([]);
       setTotalCount(0);
     } finally {
