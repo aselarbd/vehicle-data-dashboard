@@ -1,14 +1,9 @@
 import { useState, useCallback } from 'react';
+import type { VehicleDataPoint } from '../types';
+import { PAGINATION } from '../constants';
 
-export interface VehicleDataPoint {
-  id: number;
-  timestamp: string;
-  speed: number | null;
-  odometer: number;
-  soc: number;
-  elevation: number;
-  shift_state: string | null;
-}
+// Re-export for backward compatibility
+export type { VehicleDataPoint } from '../types';
 
 interface UseVehicleDataReturn {
   vehicleData: VehicleDataPoint[];
@@ -19,8 +14,6 @@ interface UseVehicleDataReturn {
   searchData: (vehicleId: string, startDateTime: string, endDateTime: string, page: number) => Promise<void>;
   clearResults: () => void;
 }
-
-const ITEMS_PER_PAGE = 10;
 
 export const useVehicleData = (): UseVehicleDataReturn => {
   const [vehicleData, setVehicleData] = useState<VehicleDataPoint[]>([]);
@@ -48,7 +41,7 @@ export const useVehicleData = (): UseVehicleDataReturn => {
       const params = new URLSearchParams({
         vehicle_id: vehicleId,
         page: page_zero_based.toString(),
-        limit: ITEMS_PER_PAGE.toString(),
+        limit: PAGINATION.ITEMS_PER_PAGE.toString(),
       });
 
       if (startDateTime) {

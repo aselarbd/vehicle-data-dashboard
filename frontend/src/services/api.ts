@@ -1,35 +1,19 @@
 import axios from 'axios';
+import type { VehicleDataResponse, ExportFormat } from '../types';
+import { API_CONFIG } from '../constants';
 
 // Base configuration for API calls
-const API_BASE_URL = 'http://localhost:8000/api/v1/vehicle_data';
-
 const api = axios.create({
-  baseURL: API_BASE_URL,
-  timeout: 10000,
+  baseURL: API_CONFIG.BASE_URL,
+  timeout: API_CONFIG.TIMEOUT,
 });
-
-// Types for our API responses
-export interface VehicleData {
-  id: number;
-  timestamp: string;
-  speed: number | null;
-  odometer: number;
-  soc: number;
-  elevation: number;
-  shift_state: string | null;
-}
-
-export interface VehicleDataResponse {
-  data: VehicleData[];
-  count: number;
-}
 
 // API service functions
 export const vehicleApi = {
   // Get all vehicle IDs
   async getVehicleIds(): Promise<string[]> {
     try {
-      const response = await api.get('/vehicle_ids');
+      const response = await api.get(API_CONFIG.ENDPOINTS.VEHICLE_IDS);
       return response.data;
     } catch (error) {
       console.error('Failed to fetch vehicle IDs:', error);
@@ -52,7 +36,7 @@ export const vehicleApi = {
         page: params.page ? params.page - 1 : 0
       };
       
-      const response = await api.get('/', { params: backendParams });
+      const response = await api.get(API_CONFIG.ENDPOINTS.VEHICLE_DATA, { params: backendParams });
       return response.data;
     } catch (error) {
       console.error('Failed to fetch vehicle data:', error);
@@ -63,7 +47,7 @@ export const vehicleApi = {
   // Populate database with sample vehicle data
   async populateData(): Promise<void> {
     try {
-      const response = await api.post('/populate', {});
+      const response = await api.post(API_CONFIG.ENDPOINTS.POPULATE, {});
       return response.data;
     } catch (error) {
       console.error('Failed to populate data:', error);
@@ -72,9 +56,9 @@ export const vehicleApi = {
   },
 
   // Export vehicle data as file
-  async exportData(vehicleId: string, exportType: 'JSON' | 'CSV' | 'EXCEL'): Promise<Blob> {
+  async exportData(vehicleId: string, exportType: ExportFormat): Promise<Blob> {
     try {
-      const response = await api.get('/export', {
+      const response = await api.get(API_CONFIG.ENDPOINTS.EXPORT, {
         params: {
           vehicle_id: vehicleId,
           export_type: exportType
