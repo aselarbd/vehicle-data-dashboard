@@ -637,6 +637,45 @@ button:disabled:hover {
   background: linear-gradient(135deg, #68d391 0%, #48bb78 100%);
 }
 
+.export-btn {
+  background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+  color: white;
+  box-shadow: 0 2px 4px rgba(66, 153, 225, 0.3);
+}
+
+.export-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(66, 153, 225, 0.4);
+}
+
+.export-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.export-btn.loading {
+  background: linear-gradient(135deg, #63b3ed 0%, #4299e1 100%);
+}
+
+.export-controls {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  align-items: end;
+}
+
+.export-controls .form-group {
+  flex: 1;
+  min-width: 180px;
+}
+
+.export-controls .action-btn {
+  flex-shrink: 0;
+  min-width: 140px;
+  margin-left: 0;
+}
+
 .spinner {
   width: 16px;
   height: 16px;
@@ -681,5 +720,21 @@ button:disabled:hover {
   
   .action-btn {
     width: 100%;
+  }
+  
+  .export-controls {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .export-controls .form-group {
+    margin-bottom: 1rem;
+    min-width: unset;
+  }
+  
+  .export-controls .action-btn {
+    margin-top: 1rem;
+    min-width: unset;
   }
 }

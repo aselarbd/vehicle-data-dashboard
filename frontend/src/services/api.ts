@@ -70,4 +70,21 @@ export const vehicleApi = {
       throw new Error('Failed to populate database with sample data');
     }
   },
+
+  // Export vehicle data as file
+  async exportData(vehicleId: string, exportType: 'JSON' | 'CSV' | 'EXCEL'): Promise<Blob> {
+    try {
+      const response = await api.get('/export', {
+        params: {
+          vehicle_id: vehicleId,
+          export_type: exportType
+        },
+        responseType: 'blob' // Important: tells axios to handle binary data
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to export data:', error);
+      throw new Error('Failed to export vehicle data');
+    }
+  },
 };

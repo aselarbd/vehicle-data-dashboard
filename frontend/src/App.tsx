@@ -64,7 +64,10 @@ function App() {
       </header>
 
       <main className="App-main">
-        <VehicleActions onDataPopulated={handleDataPopulated} />
+        <VehicleActions 
+          onDataPopulated={handleDataPopulated}
+          vehicleIds={vehicleIds}
+        />
         
         <SearchFilters
           vehicleIds={vehicleIds}
