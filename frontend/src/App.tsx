@@ -1,4 +1,5 @@
 import './App.css';
+import SearchFilters from './components/SearchFilters';
 
 function App() {
   return (
@@ -9,7 +10,7 @@ function App() {
       </header>
 
       <main className="App-main">
-        <p>Dashboard components coming soon...</p>
+        <SearchFilters />
       </main>
     </div>
   );
