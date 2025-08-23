@@ -1,11 +1,12 @@
 import glob
 import os
+from typing import List
 
 import pandas as pd
 from sqlmodel import Session, select
 
 from configs import DATA_PATH
-from database import engine
+from database import SessionDep, engine
 from vehicle.model import VehicleData, VehicleList
 
 
@@ -67,3 +68,12 @@ def load_data_from_folder() -> None:
     
     # Bulk save all VehicleData objects
     VehicleData.save_all(all_vehicle_data)
+
+
+def get_all_vehicle_ids(session: SessionDep) -> List[VehicleList]:
+    """Get all vehicle IDs from the VehicleList table"""
+    
+    statement = select(VehicleList)
+    results = session.exec(statement).all()
+
+    return list(results)

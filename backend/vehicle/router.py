@@ -1,7 +1,8 @@
 from typing import Any, List
 from fastapi import APIRouter, status
 
-from vehicle.service import load_data_from_folder
+from database import SessionDep
+from vehicle.service import get_all_vehicle_ids, load_data_from_folder
 
 
 # Create router with prefix for all vehicle_data routes
@@ -33,7 +34,15 @@ async def export_vehicle_data() -> Any:
     pass
 
 
-@router.get('/vehicle_ids', response_model=List, status_code=status.HTTP_200_OK)
-async def get_vehicle_ids() -> Any:
+@router.get(
+        '/vehicle_ids', 
+        response_model=List, 
+        status_code=status.HTTP_200_OK,
+        responses={
+               200: {"description": "Vehicle IDs retrieved successfully"}
+        },
+        )
+async def get_vehicle_ids(session: SessionDep) -> Any:
     """Get all vehicle IDs from the VehicleList table"""
-    pass
+    vehicle_records = get_all_vehicle_ids(session)
+    return [record.vehicle_id for record in vehicle_records]
