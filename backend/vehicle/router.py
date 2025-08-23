@@ -1,11 +1,12 @@
 from typing import Annotated, Any, List
 from fastapi import APIRouter, HTTPException, Query, status
+from fastapi.responses import FileResponse
 from sqlmodel import select
 
 from database import SessionDep
 from vehicle.model import VehicleList
-from vehicle.schema import FilterVehicles, VehicleDataSchema, VehicleListOutputSchema
-from vehicle.service import get_a_vehicle, get_all_vehicle_ids, get_vehicle_list, load_data_from_folder
+from vehicle.schema import FilterExportTypes, FilterVehicles, VehicleDataSchema, VehicleListOutputSchema
+from vehicle.service import export_data, get_a_vehicle, get_all_vehicle_ids, get_vehicle_list, load_data_from_folder
 
 
 # Create router with prefix for all vehicle_data routes
@@ -56,10 +57,26 @@ async def get_vehicle_data_list(filter_vehicles: Annotated[FilterVehicles, Query
     
 
 
-@router.get('/export', status_code=status.HTTP_200_OK)
-async def export_vehicle_data() -> Any:
+@router.get(
+        '/export', 
+        response_class=FileResponse,
+           status_code=status.HTTP_200_OK,
+           responses={
+               200: {"description": "Vehicle data exported successfully as file"},
+               404: {"description": "Selected Vehicle ID not found"}
+           }
+        )
+async def export_vehicle_data(export_filter: Annotated[FilterExportTypes, Query()], session: SessionDep) -> Any:
     """Export vehicle data to different formats"""
-    pass
+    
+    statement = select(VehicleList).where(VehicleList.vehicle_id == export_filter.vehicle_id)
+    results = session.exec(statement).first()
+
+    if not results:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Selected Vehicle ID not found")
+    
+    vehicle_record_id = results.id
+    return export_data(export_filter, vehicle_record_id, session)
 
 
 @router.get(

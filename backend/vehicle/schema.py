@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import List
 from pydantic import BaseModel, Field
+from enum import Enum
 
 
 class VehicleDataSchema(BaseModel):
@@ -22,3 +23,12 @@ class FilterVehicles(BaseModel):
     final: datetime | None = None
     page: int = Field(0, ge=0)
     limit: int = Field(10, ge=0, le=20)
+
+class ExportTypes(str, Enum):
+    JSON = "JSON"
+    CSV = "CSV"
+    EXCEL = "EXCEL"
+
+class FilterExportTypes(BaseModel):
+    vehicle_id: str = Field(min_length=1)
+    export_type: ExportTypes = Field(description="Choose one of: JSON, CSV, EXCEL")

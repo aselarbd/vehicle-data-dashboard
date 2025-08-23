@@ -1,15 +1,17 @@
 import glob
+import json
 import os
 from typing import Annotated, List, Optional
 
 from fastapi import Query
+from fastapi.responses import FileResponse
 import pandas as pd
 from sqlmodel import Session, func, select
 
 from configs import DATA_PATH
 from database import SessionDep, engine
 from vehicle.model import VehicleData, VehicleList
-from vehicle.schema import FilterVehicles
+from vehicle.schema import ExportTypes, FilterExportTypes, FilterVehicles
 
 
 
@@ -112,3 +114,71 @@ def get_vehicle_list(filter_vehicles: Annotated[FilterVehicles, Query()], vehicl
     results = session.exec(statement).all()
     
     return { 'count': count,'data': list(results)}
+
+def export_data(export_filter: Annotated[FilterExportTypes, Query()], vehicle_record_id: int, session: SessionDep):
+    
+    # Build the main query for VehicleData
+    statement = select(VehicleData).where(VehicleData.vehicle_list_id == vehicle_record_id)
+
+    # Execute the query only once
+    results = session.exec(statement).all()
+    file_name = export_filter.vehicle_id
+    
+    # Create exports directory if it doesn't exist
+    export_dir = "exports"
+    os.makedirs(export_dir, exist_ok=True)
+    
+    # Convert results to data_list (common for all export types)
+    data_list = []
+    for result in results:
+        data_dict = {
+            "id": result.id,
+            "timestamp": result.timestamp,
+            "speed": result.speed,
+            "odometer": result.odometer,
+            "soc": result.soc,
+            "elevation": result.elevation,
+            "shift_state": result.shift_state,
+            "vehicle_list_id": result.vehicle_list_id
+        }
+        data_list.append(data_dict)
+
+    if export_filter.export_type == ExportTypes.JSON.value:
+        # Convert timestamps to ISO format for JSON serialization
+        json_data = []
+        for data_dict in data_list:
+            json_dict = data_dict.copy()
+            json_dict["timestamp"] = data_dict["timestamp"].isoformat()
+            json_data.append(json_dict)
+        
+        file_path = os.path.join(export_dir, f"{file_name}.json")
+        with open(file_path, 'w') as f:
+            json.dump(json_data, f, indent=2, default=str)
+        
+        return FileResponse(
+            path=file_path,
+            filename=f"{file_name}.json",
+            media_type='application/json'
+        )
+
+    elif export_filter.export_type == ExportTypes.CSV.value:
+        df = pd.DataFrame(data_list)
+        file_path = os.path.join(export_dir, f"{file_name}.csv")
+        df.to_csv(file_path, index=False)
+        
+        return FileResponse(
+            path=file_path,
+            filename=f"{file_name}.csv",
+            media_type='text/csv'
+        )
+
+    elif export_filter.export_type == ExportTypes.EXCEL.value:
+        df = pd.DataFrame(data_list)
+        file_path = os.path.join(export_dir, f"{file_name}.xlsx")
+        df.to_excel(file_path, index=False, engine='openpyxl')
+        
+        return FileResponse(
+            path=file_path,
+            filename=f"{file_name}.xlsx",
+            media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
