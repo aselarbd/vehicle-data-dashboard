@@ -1,5 +1,6 @@
 import './App.css';
 import SearchFilters from './components/SearchFilters';
+import ResultsPanel from './components/ResultsPanel';
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
 
       <main className="App-main">
         <SearchFilters />
+        <ResultsPanel />
       </main>
     </div>
   );
