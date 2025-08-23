@@ -29,7 +29,7 @@ Once all services are running, you can access:
 - **Database**: `localhost:3306` (MySQL)
 
 ### 🌐 Demo
-**Demo URL**: *[Demo link will be updated here]*
+**Demo URL**: *[https://www.loom.com/share/bf4b2bb9b1a5469db99ad9e1331114d5?sid=1e213bd1-4839-4cf7-a07c-0ed8bfd51e19]*
 
 ## 🏗️ High-Level Backend Architecture
 
