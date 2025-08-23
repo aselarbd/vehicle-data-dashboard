@@ -59,4 +59,15 @@ export const vehicleApi = {
       throw new Error('Failed to load vehicle data');
     }
   },
+
+  // Populate database with sample vehicle data
+  async populateData(): Promise<void> {
+    try {
+      const response = await api.post('/populate', {});
+      return response.data;
+    } catch (error) {
+      console.error('Failed to populate data:', error);
+      throw new Error('Failed to populate database with sample data');
+    }
+  },
 };

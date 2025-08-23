@@ -1,5 +1,6 @@
 import './App.css';
 import SearchFilters from './components/SearchFilters';
+import VehicleActions from './components/VehicleActions';
 import ResultsPanel from './components/ResultsPanel';
 import { useVehicleIds } from './hooks/useVehicleIds';
 import { useFormState } from './hooks/useFormState';
@@ -44,6 +45,12 @@ function App() {
     clearResults();
   };
 
+  const handleDataPopulated = () => {
+    // Optionally refresh vehicle IDs or show a success message
+    // This could trigger a re-fetch of vehicle IDs if needed
+    console.log('Data populated successfully');
+  };
+
   return (
     <div className="App">
       <header className="App-header">
@@ -57,6 +64,8 @@ function App() {
       </header>
 
       <main className="App-main">
+        <VehicleActions onDataPopulated={handleDataPopulated} />
+        
         <SearchFilters
           vehicleIds={vehicleIds}
           loadingVehicleIds={loadingVehicleIds}
