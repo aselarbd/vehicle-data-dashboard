@@ -1,18 +1,36 @@
 import type { FC } from 'react';
 
-const VehicleDropdown: FC = () => {
+interface VehicleDropdownProps {
+  vehicleIds: string[];
+  selectedVehicleId: string;
+  onSelectVehicle: (vehicleId: string) => void;
+  loading?: boolean;
+}
+
+const VehicleDropdown: FC<VehicleDropdownProps> = ({
+  vehicleIds,
+  selectedVehicleId,
+  onSelectVehicle,
+  loading = false,
+}) => {
   return (
     <div className="form-group">
       <label htmlFor="vehicle-select">Vehicle ID</label>
       <select
         id="vehicle-select"
         className="form-control"
-        defaultValue=""
+        value={selectedVehicleId}
+        onChange={(e) => onSelectVehicle(e.target.value)}
+        disabled={loading || vehicleIds.length === 0}
       >
-        <option value="">Select a vehicle</option>
-        <option value="vehicle-001">vehicle-001</option>
-        <option value="vehicle-002">vehicle-002</option>
-        <option value="vehicle-003">vehicle-003</option>
+        <option value="">
+          {loading ? 'Loading vehicles...' : 'Select a vehicle'}
+        </option>
+        {vehicleIds.map((vehicleId) => (
+          <option key={vehicleId} value={vehicleId}>
+            {vehicleId}
+          </option>
+        ))}
       </select>
     </div>
   );

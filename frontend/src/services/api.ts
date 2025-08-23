@@ -1,0 +1,62 @@
+import axios from 'axios';
+
+// Base configuration for API calls
+const API_BASE_URL = 'http://localhost:8000/api/v1/vehicle_data';
+
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  timeout: 10000,
+});
+
+// Types for our API responses
+export interface VehicleData {
+  id: number;
+  timestamp: string;
+  speed: number | null;
+  odometer: number;
+  soc: number;
+  elevation: number;
+  shift_state: string | null;
+}
+
+export interface VehicleDataResponse {
+  data: VehicleData[];
+  count: number;
+}
+
+// API service functions
+export const vehicleApi = {
+  // Get all vehicle IDs
+  async getVehicleIds(): Promise<string[]> {
+    try {
+      const response = await api.get('/vehicle_ids');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch vehicle IDs:', error);
+      throw new Error('Failed to load vehicle IDs');
+    }
+  },
+
+  // Get vehicle data with filters
+  async getVehicleData(params: {
+    vehicle_id: string;
+    initial?: string;
+    final?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<VehicleDataResponse> {
+    try {
+      // Convert page to 0-based indexing for backend
+      const backendParams = {
+        ...params,
+        page: params.page ? params.page - 1 : 0
+      };
+      
+      const response = await api.get('/', { params: backendParams });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch vehicle data:', error);
+      throw new Error('Failed to load vehicle data');
+    }
+  },
+};
