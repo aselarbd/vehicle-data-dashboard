@@ -44,6 +44,19 @@ services:
     networks:
       - volteras-network
 
+  volteras-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: volteras-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - volteras_backend
+    networks:
+      - volteras-network
+
 volumes:
   mysql_data:
     driver: local
