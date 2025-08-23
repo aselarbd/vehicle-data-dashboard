@@ -5,7 +5,11 @@ import DatePicker from './DatePicker';
 const SearchFilters: FC = () => {
   return (
     <div className="search-section">
-      <h2>Search Filters</h2>
+      <div className="section-header">
+        <h2>🔍 Search Filters</h2>
+        <p>Filter vehicle data by ID and time range</p>
+      </div>
+      
       <div className="controls-container">
         <VehicleDropdown />
 
@@ -23,11 +27,11 @@ const SearchFilters: FC = () => {
 
         <div className="action-buttons">
           <button className="search-btn">
-            Search
+            🔎 Search Data
           </button>
           
           <button className="clear-btn">
-            Clear
+            🗑️ Clear Filters
           </button>
         </div>
       </div>
