@@ -1,4 +1,4 @@
-# Volteras Vehicle Data Management System
+# Vehicle Data Management System
 
 A full-stack web application for managing and visualizing vehicle data with advanced filtering, pagination, and export capabilities. Built with modern technologies including FastAPI, React, TypeScript, and MySQL, all containerized with Docker.
 
